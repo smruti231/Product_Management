@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <script>
+        const baseUrl = "http://localhost:1234/Products";
+
+        const showDetails = (id) => {
+            const url = baseUrl + "/" + id;
+            $.get(url, (data) => {
+                $("#txtId").val(data.empId);
+                $("#txtName").val(data.empName);
+                $("#txtAddress").val(data.empAddress);
+                $("#txtSalary").val(data.empSalary);
+                $("#txtDept").val(data.deptId);
+            })
+        }
+
+        const populate = () => {
+            $("table").find("tr:gt(0)").remove();
+            $.get(baseUrl, (data) => {
+                data.forEach(e => {
+                    const row = `<tr><td>${e.pId}</td><td>${e.pName}</td><td>${e.pPrice}</td><td>${e.pRating}</td><td>${e.pStock}</td></tr>`
+                    $("table").append(row)
+                });
+            })
+        }
+
+        $(document).ready(() => {
+            $("a:first").click(populate);
+
+            $("#searchButton").click(() => {
+                const searchCriteria = $("#searchCriteria").val();
+                const searchTerm = $("#searchTerm").val();
+
+                // Construct the URL for searching based on criteria and term
+                const searchUrl = baseUrl + `/search?criteria=${searchCriteria}&term=${searchTerm}`;
+
+                // Make an AJAX GET request to the server for search results
+                $.get(searchUrl, (data) => {
+                    // Clear the existing table rows
+                    $("table").find("tr:gt(0)").remove();
+                    data.forEach((e) => {
+                        const row = `<tr><td>${e.pId}</td><td>${e.pName}</td><td>${e.pPrice}</td><td>${e.pRating}</td><td>${e.pStock}</td></tr>`;
+                        $("table").append(row);
+                    });
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1 class="h1">Product Store</h1>
+    <hr>
+    <nav class="nav navbar text-center navbar-expand-1g bg-primary">
+        <ul class="navbar-nav  text-center">
+            <li class="nav-item">
+                <a href="#" class="nav-link text-light">View Products</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7">
+                <table class="table">
+                    <tr>
+                        <th>ProductId</th>
+                        <th>ProductName</th>
+                        <th>ProductPrice</th>
+                        <th>ProductRating</th>
+                        <th>ProductStock</th>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="searchCriteria">Search By</label>
+                    <select class="form-control" id="searchCriteria">
+                        <option value="name">Product Name</option>
+                        <option value="rating">Product Rating</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="searchTerm">Serach Term: </label>
+                    <input type="text" class="form-control" id="searchTerm">
+                </div>
+                <button class="btn btn-primary" id="searchButton">Search</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
