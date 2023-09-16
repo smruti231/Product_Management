@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Store</title>
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="styles.css"> <!-- Add your custom CSS file here -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqyYf5F7c4l5srb0F5Tf5k4l5X5z5F5W5F5F5F5F5F5F5F5F5F5" crossorigin="anonymous"></script>
+    <script>
+        const baseUrl = "http://localhost:1234/Products";
+
+        const populate = () => {
+            $("table").find("tr:gt(0)").remove();
+            $.get(baseUrl, (data) => {
+                data.forEach(e => {
+                    const row = `<tr><td>${e.pId}</td><td>${e.pName}</td><td>${e.pPrice}</td><td>${e.pRating}</td><td>${e.pStock}</td></tr>`;
+                    $("table").append(row);
+                });
+            });
+        }
+
+        const sortProducts = (criteria) => {
+            const sortUrl = `${baseUrl}/sort/${criteria}`;
+            $.get(sortUrl, (data) => {
+                if (Array.isArray(data)) {
+                    $("table tbody").empty();
+                    data.forEach((e) => {
+                        const row = `<tr><td>${e.pId}</td><td>${e.pName}</td><td>${e.pPrice}</td><td>${e.pRating}</td><td>${e.pStock}</td></tr>`;
+                        $("table").append(row);
+                    });
+                } else {
+                    console.error("Invalid data received from the server: ", data);
+                }
+            });
+        }
+
+        $(document).ready(() => {
+            $("a:first").click(populate);
+
+            $("#sortButton").click(() => {
+                const selectedCriteria = $("#sortCriteria").val();
+                sortProducts(selectedCriteria);
+            });
+
+            $("#searchButton").click(() => {
+                const searchCriteria = $("#searchCriteria").val();
+                const searchTerm = $("#searchTerm").val();
+                const searchUrl = `${baseUrl}/search/${searchCriteria}/${searchTerm}`;
+                $.ajax({
+                    method: "GET",
+                    url: searchUrl,
+                    success: (data) => {
+                        $("table").find("tr:gt(0)").remove();
+                        data.forEach((e) => {
+                            const row = `<tr><td>${e.pId}</td><td>${e.pName}</td><td>${e.pPrice}</td><td>${e.pRating}</td><td>${e.pStock}</td></tr>`;
+                            $("table").append(row);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-store"></i> Product Store
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"><i class="fas fa-shopping-basket"></i> View Products</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <h2><i class="fas fa-list"></i> Product List</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Rating</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h2><i class="fas fa-search"></i> Search and Sort</h2>
+                <!-- Search Feature -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Search</h5>
+                        <div class="form-group">
+                            <label for="searchCriteria">Search By</label>
+                            <select class="form-control" id="searchCriteria">
+                                <option value="name">Product Name</option>
+                                <option value="rating">Product Rating</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="searchTerm">Search Term:</label>
+                            <input type="text" class="form-control" id="searchTerm">
+                        </div>
+                        <button class="btn btn-primary" id="searchButton"><i class="fas fa-search"></i> Search</button>
+                    </div>
+                </div>
+                <!-- Sort Feature -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Sort</h5>
+                        <div class="form-group">
+                            <label for="sortCriteria">Sort By</label>
+                            <select class="form-control" id="sortCriteria">
+                                <option value="name">Product Name</option>
+                                <option value="price">Product Price</option>
+                                <option value="rating">Product Rating</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="sortButton"><i class="fas fa-sort"></i> Sort</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="bg-dark text-light text-center py-3">
+        &copy; 2023 Product Store
+    </footer>
+</body>
+</html>
